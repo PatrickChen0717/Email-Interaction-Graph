@@ -1,12 +1,54 @@
 package cpen221.mp2;
 
-import java.util.List;
-import java.util.Set;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.*;
 
 public class DWInteractionGraph {
 
     /* ------- Task 1 ------- */
     /* Building the Constructors */
+    private String fileName;
+    private ArrayList<Integer> allUsers=new ArrayList<>();
+    private ArrayList[][] interactionMap;
+
+    public ArrayList<Integer> getalluser(int[] timeFilter,List<Integer> userFilter){
+        ArrayList<Integer> users=new ArrayList<>();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            for (String fileLine = reader.readLine();
+                 fileLine != null;
+                 fileLine = reader.readLine()) {
+                String[] line = fileLine.split(" ");
+
+                if(Integer.parseInt(String.valueOf(line[2]))<=timeFilter[1]&&Integer.parseInt(String.valueOf(line[2]))>=timeFilter[0]){
+                    int sender=Integer.parseInt(String.valueOf(line[0]));
+                    int receiver=Integer.parseInt(String.valueOf(line[1]));
+                    if(users.contains(sender)==false&&(userFilter.contains(sender)==true||userFilter.size()==0)){
+                        users.add(sender);
+                        if(users.contains(receiver)==false){
+                            users.add(receiver);
+                        }
+                    }
+                    if(users.contains(receiver)==false&&(userFilter.contains(receiver)==true||userFilter.size()==0)){
+                        users.add(receiver);
+                        if(users.contains(sender)==false){
+                            users.add(sender);
+                        }
+                    }
+
+                }
+            }
+            reader.close();
+        }
+        catch (IOException ioe) {
+            System.out.println("Problem reading file!");
+        }
+        System.out.println("arraylength:"+users.size()+"    "+users);
+        return users;
+    }
 
     /**
      * Creates a new DWInteractionGraph using an email interaction file.
@@ -16,7 +58,39 @@ public class DWInteractionGraph {
      *                 directory containing email interactions
      */
     public DWInteractionGraph(String fileName) {
-        // TODO: Implement this constructor
+        this.fileName=fileName;
+        this.allUsers=getalluser(new int[]{0,Integer.MAX_VALUE },Collections.emptyList());
+        ArrayList[][] interactmap = new ArrayList[allUsers.size()][allUsers.size()];
+        for(int i=0;i<allUsers.size();i++){
+            for(int j=0;j<allUsers.size();j++){
+                interactmap[i][j]=new ArrayList();
+            }
+        }
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            for (String fileLine = reader.readLine();
+                 fileLine != null;
+                 fileLine = reader.readLine()) {
+                String[] line = fileLine.split(" ");
+                int sender=Integer.parseInt(String.valueOf(line[0]));
+                int receiver=Integer.parseInt(String.valueOf(line[1]));
+                int timestamp=Integer.parseInt(String.valueOf(line[2]));
+                interactmap[allUsers.indexOf(sender)][allUsers.indexOf(receiver)].add(timestamp);
+            }
+            reader.close();
+        }
+        catch (IOException ioe) {
+            System.out.println("Problem reading file!");
+        }
+        this.interactionMap=interactmap;
+
+        for(int i=0;i<allUsers.size();i++){
+            for(int j=0;j<allUsers.size();j++){
+                System.out.print(this.interactionMap[i][j].size()+" ");
+            }
+            System.out.println();
+        }
     }
 
     /**
@@ -31,7 +105,34 @@ public class DWInteractionGraph {
      *                   t0 <= t <= t1 range.
      */
     public DWInteractionGraph(DWInteractionGraph inputDWIG, int[] timeFilter) {
-        // TODO: Implement this constructor
+        this.fileName=inputDWIG.fileName;
+        this.allUsers=getalluser(timeFilter,Collections.emptyList());
+        ArrayList<Integer> oldusers=inputDWIG.allUsers;
+
+        System.out.println("all users: "+allUsers);
+
+        //declaration of 3D array
+        ArrayList[][] interactmap = new ArrayList[allUsers.size()][allUsers.size()];
+        for(int i=0;i<allUsers.size();i++){
+            for(int j=0;j<allUsers.size();j++){
+                interactmap[i][j]=new ArrayList();
+            }
+        }
+
+        for(int i=0;i<this.allUsers.size();i++){
+            for(int j=0;j<this.allUsers.size();j++){
+                interactmap[i][j].addAll(inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))]);
+            }
+        }
+        this.interactionMap=interactmap;
+
+        for(int i=0;i<allUsers.size();i++){
+            for(int j=0;j<allUsers.size();j++){
+                System.out.print(this.interactionMap[i][j].size()+" ");
+            }
+            System.out.println();
+        }
+
     }
 
     /**
@@ -45,7 +146,33 @@ public class DWInteractionGraph {
      *                   nor the receiver exist in userFilter.
      */
     public DWInteractionGraph(DWInteractionGraph inputDWIG, List<Integer> userFilter) {
-        // TODO: Implement this constructor
+        this.fileName=inputDWIG.fileName;
+        this.allUsers=getalluser(new int[]{0,Integer.MAX_VALUE },userFilter);
+        ArrayList<Integer> oldusers=inputDWIG.allUsers;
+
+        System.out.println("all users: "+allUsers);
+
+        //declaration of 3D array
+        ArrayList[][] interactmap = new ArrayList[allUsers.size()][allUsers.size()];
+        for(int i=0;i<allUsers.size();i++){
+            for(int j=0;j<allUsers.size();j++){
+                interactmap[i][j]=new ArrayList();
+            }
+        }
+
+        for(int i=0;i<this.allUsers.size();i++){
+            for(int j=0;j<this.allUsers.size();j++){
+                interactmap[i][j].addAll(inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))]);
+            }
+        }
+        this.interactionMap=interactmap;
+
+        for(int i=0;i<allUsers.size();i++){
+            for(int j=0;j<allUsers.size();j++){
+                System.out.print(this.interactionMap[i][j].size()+" ");
+            }
+            System.out.println();
+        }
     }
 
     /**
@@ -53,8 +180,12 @@ public class DWInteractionGraph {
      * in this DWInteractionGraph.
      */
     public Set<Integer> getUserIDs() {
-        // TODO: Implement this getter method
-        return null;
+        Set<Integer> UserOutput=new HashSet<>();
+        for(int i=0;i<this.allUsers.size();i++){
+            UserOutput.add(this.allUsers.get(i));
+        }
+
+        return UserOutput;
     }
 
     /**
@@ -64,8 +195,7 @@ public class DWInteractionGraph {
      * receiver in this DWInteractionGraph.
      */
     public int getEmailCount(int sender, int receiver) {
-        // TODO: Implement this getter method
-        return 0;
+        return this.interactionMap[allUsers.indexOf(sender)][allUsers.indexOf(receiver)].size();
     }
 
     /* ------- Task 2 ------- */
