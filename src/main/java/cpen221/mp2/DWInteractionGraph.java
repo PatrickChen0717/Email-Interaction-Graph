@@ -15,7 +15,7 @@ public class DWInteractionGraph {
     public ArrayList<Integer> allUsers=new ArrayList<>();
     public ArrayList[][] interactionMap;
 
-    public ArrayList<Integer> getalluser(int[] timeFilter,List<Integer> userFilter){
+    private ArrayList<Integer> getalluser(int[] timeFilter,List<Integer> userFilter){
         ArrayList<Integer> users=new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -50,7 +50,42 @@ public class DWInteractionGraph {
         System.out.println("arraylength:"+users.size()+"    "+users);
         return users;
     }
+    private void reverseScoreSort(int[][] rankList){
+        int[] temp;
 
+        for (int i = 0; i < rankList.length; i++)
+        {
+            for (int j = i + 1; j < rankList.length; j++)
+            {
+                if (rankList[i][0] < rankList[j][0])
+                {
+                    temp = rankList[i];
+                    rankList[i] = rankList[j];
+                    rankList[j] = temp;
+                }
+            }
+        }
+    }
+
+    private void reversePlayerSort(int[][] rankList,int score){
+        int[] temp;
+
+        for (int i = 0; i < rankList.length; i++)
+        {
+            for (int j = i + 1; j < rankList.length; j++)
+            {
+                if(rankList[i][1]==score){
+                    if (rankList[i][1] > rankList[j][1])
+                    {
+                        temp = rankList[i];
+                        rankList[i] = rankList[j];
+                        rankList[j] = temp;
+                    }
+                }
+
+            }
+        }
+    }
     /**
      * Creates a new DWInteractionGraph using an email interaction file.
      * The email interaction file will be in the resources directory.
@@ -285,7 +320,66 @@ public class DWInteractionGraph {
      */
     public int NthMostActiveUser(int N, SendOrReceive interactionType) {
         // TODO: Implement this method
+        if(interactionType==SendOrReceive.RECEIVE){
+            int[][] Ranking=new int[allUsers.size()][2];
+
+            for(int i=0;i<allUsers.size();i++){
+                int[] UserReport=ReportOnUser(allUsers.get(i));
+                Ranking[i][1]=allUsers.get(i);
+                Ranking[i][0]=UserReport[1];
+            }
+
+            reverseScoreSort(Ranking);
+            int score = Ranking[N-1][0];
+            reversePlayerSort(Ranking,score);
+
+            System.out.println("----------");
+            for(int i=0;i<allUsers.size();i++){
+                for(int j=0;j<2;j++){
+                    System.out.print(Ranking[i][j]+" ");
+                }
+                System.out.println();
+            }
+
+            if(Ranking[N-1][0]==0){
+                return -1;
+            }
+            else{
+                return Ranking[N-1][1];
+            }
+        }
+
+        else if(interactionType==SendOrReceive.SEND){
+            int[][] Ranking=new int[allUsers.size()][2];
+
+            for(int i=0;i<allUsers.size();i++){
+                int[] UserReport=ReportOnUser(allUsers.get(i));
+                Ranking[i][1]=allUsers.get(i);
+                Ranking[i][0]=UserReport[0];
+            }
+
+            reverseScoreSort(Ranking);
+            int score = Ranking[N-1][0];
+            reversePlayerSort(Ranking,score);
+
+            System.out.println("----------");
+            for(int i=0;i<allUsers.size();i++){
+                for(int j=0;j<2;j++){
+                    System.out.print(Ranking[i][j]+" ");
+                }
+                System.out.println();
+            }
+
+            if(Ranking[N-1][0]==0){
+                return -1;
+            }
+            else{
+                return Ranking[N-1][1];
+            }
+        }
+
         return -1;
+
     }
 
     /* ------- Task 3 ------- */

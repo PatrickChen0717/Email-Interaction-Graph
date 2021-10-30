@@ -14,7 +14,7 @@ public class UDWInteractionGraph {
     private ArrayList[][] interactionMap;
 
 
-    public ArrayList<Integer> getalluser(int[] timeFilter,List<Integer> userFilter){
+    private ArrayList<Integer> getalluser(int[] timeFilter,List<Integer> userFilter){
         ArrayList<Integer> users=new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
