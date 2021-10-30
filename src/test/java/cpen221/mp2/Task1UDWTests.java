@@ -13,6 +13,7 @@ public class Task1UDWTests {
     private static UDWInteractionGraph testGraph1;
     private static UDWInteractionGraph testGraph2;
 
+
     @BeforeAll
     public static void setupTests() {
         testGraphBase = new UDWInteractionGraph("resources/Task1-2UDWTransactions.txt");

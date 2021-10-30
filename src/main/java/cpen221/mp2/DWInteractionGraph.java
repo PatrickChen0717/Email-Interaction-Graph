@@ -8,11 +8,12 @@ import java.util.*;
 
 public class DWInteractionGraph {
 
+
     /* ------- Task 1 ------- */
     /* Building the Constructors */
-    private String fileName;
-    private ArrayList<Integer> allUsers=new ArrayList<>();
-    private ArrayList[][] interactionMap;
+    public String fileName;
+    public ArrayList<Integer> allUsers=new ArrayList<>();
+    public ArrayList[][] interactionMap;
 
     public ArrayList<Integer> getalluser(int[] timeFilter,List<Integer> userFilter){
         ArrayList<Integer> users=new ArrayList<>();
@@ -26,13 +27,13 @@ public class DWInteractionGraph {
                 if(Integer.parseInt(String.valueOf(line[2]))<=timeFilter[1]&&Integer.parseInt(String.valueOf(line[2]))>=timeFilter[0]){
                     int sender=Integer.parseInt(String.valueOf(line[0]));
                     int receiver=Integer.parseInt(String.valueOf(line[1]));
-                    if(users.contains(sender)==false&&(userFilter.contains(sender)==true||userFilter.size()==0)){
+                    if(users.contains(sender)==false&&((userFilter.contains(receiver)==true||userFilter.contains(sender)==true)||userFilter.size()==0)){
                         users.add(sender);
                         if(users.contains(receiver)==false){
                             users.add(receiver);
                         }
                     }
-                    if(users.contains(receiver)==false&&(userFilter.contains(receiver)==true||userFilter.size()==0)){
+                    if(users.contains(receiver)==false&&((userFilter.contains(receiver)==true||userFilter.contains(sender)==true)||userFilter.size()==0)){
                         users.add(receiver);
                         if(users.contains(sender)==false){
                             users.add(sender);
@@ -195,6 +196,9 @@ public class DWInteractionGraph {
      * receiver in this DWInteractionGraph.
      */
     public int getEmailCount(int sender, int receiver) {
+        if(allUsers.contains(sender)==false||allUsers.contains(receiver)==false){
+            return 0;
+        }
         return this.interactionMap[allUsers.indexOf(sender)][allUsers.indexOf(receiver)].size();
     }
 
@@ -209,8 +213,28 @@ public class DWInteractionGraph {
      * [NumberOfSenders, NumberOfReceivers, NumberOfEmailTransactions]
      */
     public int[] ReportActivityInTimeWindow(int[] timeWindow) {
-        // TODO: Implement this method
-        return null;
+        Set<Integer> senderCount=new HashSet<>();
+        Set<Integer> receiverCount=new HashSet<>();
+        int interactionCount =0;
+        for (int sender =0; sender<this.interactionMap.length; sender++){
+            for (int receiver =0; receiver<this.interactionMap.length; receiver++){
+                if(this.interactionMap[sender][receiver].size()>0){
+
+                    for(int i=0; i< this.interactionMap[sender][receiver].size(); i++){
+                        if((int)this.interactionMap[sender][receiver].get(i)>= timeWindow[0] && (int)this.interactionMap[sender][receiver].get(i)<= timeWindow[1]){
+                            senderCount.add(sender);
+                            receiverCount.add(receiver);
+                            interactionCount++;
+                        }
+                    }
+
+                }
+            }
+        }
+
+        int[] result = {senderCount.size(),receiverCount.size(),interactionCount};
+
+        return result;
     }
 
     /**
@@ -223,8 +247,32 @@ public class DWInteractionGraph {
      * returns [0, 0, 0].
      */
     public int[] ReportOnUser(int userID) {
-        // TODO: Implement this method
-        return null;
+        int sendCount=0;
+        int receiveCount=0;
+        Set<Integer> uniqueUsers=new HashSet<>();
+
+        int user = this.allUsers.indexOf(userID);
+
+        if(allUsers.contains(userID)==false){
+            return new int[]{0,0,0};
+        }
+
+        for (int receiver =0; receiver<this.interactionMap.length; receiver++) {
+            if (this.interactionMap[user][receiver].size() > 0) {
+                uniqueUsers.add(receiver);
+                sendCount = sendCount + this.interactionMap[user][receiver].size();
+            }
+        }
+
+        for (int sender =0; sender<this.interactionMap.length; sender++){
+            if (this.interactionMap[sender][user].size() > 0) {
+                uniqueUsers.add(sender);
+                receiveCount = receiveCount + this.interactionMap[sender][user].size();
+            }
+        }
+
+        int[] result = {sendCount,receiveCount,uniqueUsers.size()};
+        return result;
     }
 
     /**
