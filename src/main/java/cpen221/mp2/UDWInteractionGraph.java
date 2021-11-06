@@ -3,6 +3,7 @@ package cpen221.mp2;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class UDWInteractionGraph {
@@ -328,18 +329,85 @@ public class UDWInteractionGraph {
      *    components in the UDWInteractionGraph object.
      */
     public int NumberOfComponents() {
-        // TODO: Implement this method
-        return 0;
-    }
+        ArrayList<Integer> userlist=allUsers;
+        int count=0;
 
+        ArrayList<Integer> graph=new ArrayList<>();
+
+            for(int i=0;i<userlist.size();i++){
+                if(graph.contains(userlist.get(i))==false){
+                    graph.add(userlist.get(i));
+                    System.out.println(graph);
+                    int userid= userlist.get(i);
+                    findconnection(userid, userlist, graph);
+                    count++;
+                    System.out.println("count="+count);
+                }
+            }
+
+
+
+        return count;
+    }
+    public void findconnection(int userid, ArrayList userlist, ArrayList graph){
+        for(int j=0;j<userlist.size();j++){
+            if(interactionMap[allUsers.indexOf(userid)][allUsers.indexOf(userlist.get(j))].size()>0&& graph.contains(userlist.get(j))==false){
+                graph.add(userlist.get(j));
+                System.out.println(graph);
+                int nextuser= (int) userlist.get(j);
+                findconnection(nextuser, userlist,graph);
+            }
+            if(interactionMap[allUsers.indexOf(userlist.get(j))][allUsers.indexOf(userid)].size()>0&& graph.contains(userlist.get(j))==false){
+                graph.add(userlist.get(j));
+                System.out.println(graph);
+                int nextuser= (int) userlist.get(j);
+                findconnection(nextuser, userlist,graph);
+            }
+        }
+    }
     /**
      * @param userID1 the user ID for the first user
      * @param userID2 the user ID for the second user
      * @return whether a path exists between the two users
      */
     public boolean PathExists(int userID1, int userID2) {
-        // TODO: Implement this method
-        return false;
+        int user1=allUsers.indexOf(userID1);
+        int user2=allUsers.indexOf(userID2);
+        System.out.println("from "+user1+"to "+user2);
+        ArrayList<Integer> array=new ArrayList<>();
+        ArrayList<Integer> temp=new ArrayList<>();
+        getpath(user1,user2, array, temp);
+        if(temp.contains(true)==true){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
-
+    public void getpath(int user1, int user2, ArrayList array, ArrayList temp) {
+        int check=0;
+        for (int i = 0; i < allUsers.size(); i++) {
+            if (interactionMap[user1][i].size() > 0 ){
+                check++;
+            }
+        }
+        if(user1==user2){
+            System.out.println("done: true");
+            temp.add(true);
+        }
+        else if(check==0){
+            temp.add(false);
+        }
+        else{
+            for (int i = 0; i < allUsers.size(); i++) {
+                if (interactionMap[user1][i].size() > 0 && array.contains(i) == false) {
+                    System.out.println("check:" + user1 + " " + i);
+                    array.add(i);
+                    getpath(i, user2, array, temp);
+                }
+            }
+            System.out.println("done: false");
+        }
+        temp.add(false);
+    }
 }
