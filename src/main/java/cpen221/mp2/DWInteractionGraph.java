@@ -157,7 +157,12 @@ public class DWInteractionGraph {
 
         for(int i=0;i<this.allUsers.size();i++){
             for(int j=0;j<this.allUsers.size();j++){
-                interactmap[i][j].addAll(inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))]);
+                for(int counter=0;counter<inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))].size();counter++){
+                    int time= (int) inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))].get(counter);
+                    if(time<=timeFilter[1]&&time>=timeFilter[0]){
+                        interactmap[i][j].add(inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))].get(counter));
+                    }
+                }
             }
         }
         this.interactionMap=interactmap;
