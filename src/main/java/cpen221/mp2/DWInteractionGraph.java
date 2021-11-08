@@ -157,7 +157,12 @@ public class DWInteractionGraph {
 
         for(int i=0;i<this.allUsers.size();i++){
             for(int j=0;j<this.allUsers.size();j++){
-                interactmap[i][j].addAll(inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))]);
+                for(int counter=0;counter<inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))].size();counter++){
+                    int time= (int) inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))].get(counter);
+                    if(time<=timeFilter[1]&&time>=timeFilter[0]){
+                        interactmap[i][j].add(inputDWIG.interactionMap[oldusers.indexOf(allUsers.get(i))][oldusers.indexOf(allUsers.get(j))].get(counter));
+                    }
+                }
             }
         }
         this.interactionMap=interactmap;
@@ -393,9 +398,72 @@ public class DWInteractionGraph {
      * in the order encountered in the search.
      * if no path exists, should return null.
      */
+    /**
+     * performs breadth first search on the DWInteractionGraph object
+     * to check path between user with userID1 and user with userID2.
+     * @param userID1 the user ID for the first user
+     * @param userID2 the user ID for the second user
+     * @return if a path exists, returns aa list of user IDs
+     * in the order encountered in the search.
+     * if no path exists, should return null.
+     */
     public List<Integer> BFS(int userID1, int userID2) {
         // TODO: Implement this method
+        int startIndex = this.allUsers.indexOf(userID1);
+
+        ArrayList<Integer> masterList = new ArrayList<>();
+        masterList.add(userID1);
+        Set<Integer> revisitList = new HashSet<>();
+        revisitList.add(startIndex);
+
+        BFS_helper(userID2,masterList,revisitList);
+
+        if(masterList.get(masterList.size()-1)==userID2){
+            return masterList;
+        }
+
         return null;
+
+    }
+
+
+    private void BFS_helper(int target, ArrayList<Integer> masterList, Set<Integer> revisitList){
+
+        ArrayList<Integer> nextList = new ArrayList<>();
+
+        for(int i=0; i<masterList.size(); i++){
+
+            ArrayList<Integer> temp = new ArrayList<>();
+            for(int j=0; j<this.allUsers.size(); j++){
+                if (revisitList.contains(j)==false){
+                    if (this.interactionMap[this.allUsers.indexOf(masterList.get(i))][j].size() >= 1){
+
+                        temp.add(this.allUsers.get(j));
+                        revisitList.add(j);
+
+                    }
+                }
+            }
+
+            Collections.sort(temp);
+            for(int k=0; k<temp.size(); k++){
+                if(masterList.contains(temp.get(k))==false){
+                    masterList.add(temp.get(k));
+                    if(temp.get(k)==target){
+                        return;
+                    }
+                }
+                if(nextList.contains(temp.get(k))==false){
+                    nextList.add(temp.get(k));
+                }
+            }
+            if(nextList.size()==0){
+                return;
+            }
+
+        }
+
+        BFS_helper(target,nextList,revisitList);
     }
 
     /**
@@ -408,8 +476,40 @@ public class DWInteractionGraph {
      * if no path exists, should return null.
      */
     public List<Integer> DFS(int userID1, int userID2) {
-        // TODO: Implement this method
-        return null;
+
+        int indexoflastvisited=allUsers.indexOf(userID1);
+
+        ArrayList<Integer> path=new ArrayList<>();
+        path.add(userID1);
+        DFSrecursion(path,userID1,userID2,indexoflastvisited);
+        System.out.println(path);
+
+        if (path.contains(userID2)){
+            return  path;
+        }
+        else return null;
+    }
+    private void DFSrecursion(ArrayList<Integer> ways,int ID1,int ID2,int lastvisted){
+        ArrayList<Integer> samelevel=new ArrayList<>();
+        for (int i = 0; i < interactionMap.length; i++) {
+            if (interactionMap[allUsers.indexOf(ID1)][i].size() >= 1 && !ways.contains(allUsers.get(i))) {
+                samelevel.add(allUsers.get(i));
+            }
+        }
+        Collections.sort(samelevel);
+        if(samelevel.size()==0){
+            return;
+        }
+        for (Integer integer : samelevel) {
+            if (ways.contains(ID2)) {
+                return;
+            }
+            if (!ways.contains(integer)) {
+                ways.add(integer);
+                DFSrecursion(ways, integer, ID2, lastvisted);
+            }
+        }
+
     }
 
     /* ------- Task 4 ------- */
@@ -421,8 +521,51 @@ public class DWInteractionGraph {
      * @return the maximum number of users that can be polluted in N hours
      */
     public int MaxBreachedUserCount(int hours) {
-        // TODO: Implement this method
-        return 0;
+        int victims=0;
+        ArrayList<Integer> temp=new ArrayList<>();
+        for(int i=0;i<allUsers.size();i++){
+            for(int j=0;j<allUsers.size();j++){
+                if(interactionMap[i][j].size()>0){
+                    for(int lettercount=0;lettercount<interactionMap[i][j].size();lettercount++){
+                        int user1=allUsers.get(i);
+                        int time= (int) interactionMap[i][j].get(lettercount);
+                        ArrayList<Integer> array=new ArrayList<>();
+                        array.add(user1);
+                        array.add(allUsers.get(j));
+
+                        //System.out.println("Email Sender: "+user1+ " receiver: "+allUsers.get(j)+ " at time "+time);
+                        task4helper( user1,time,array,3600*hours+time);
+                        task4helper( allUsers.get(j),time,array,3600*hours+time);
+                        //System.out.println(array);
+
+                        if(array.size()>victims){
+                            victims=array.size();
+                            temp.clear();
+                            temp.addAll(array);
+                        }
+                        array.clear();
+                    }
+                }
+            }
+        }
+        System.out.println(temp);
+        return victims;
     }
 
+    public void task4helper(int user1, int time,ArrayList array, int hours) {
+        for(int i=0;i<allUsers.size();i++){
+            if(interactionMap[allUsers.indexOf(user1)][i].size()>0&&array.contains(allUsers.get(i))==false){
+                for(int timechecker=0;timechecker<interactionMap[allUsers.indexOf(user1)][i].size();timechecker++){
+                    //System.out.println(user1+" to "+ allUsers.get(i)+" at "+(int)interactionMap[allUsers.indexOf(user1)][i].get(timechecker));
+                    if((int)interactionMap[allUsers.indexOf(user1)][i].get(timechecker)>time&&(int)interactionMap[allUsers.indexOf(user1)][i].get(timechecker)<=hours){
+                        //System.out.println("found: "+user1+" spread to "+allUsers.get(i)+" at "+(int) interactionMap[allUsers.indexOf(user1)][i].get(timechecker));
+                        if(array.contains(allUsers.get(i))==false){
+                            array.add(allUsers.get(i));
+                        }
+                        task4helper(allUsers.get(i),(int) interactionMap[allUsers.indexOf(user1)][i].get(timechecker), array, hours);
+                    }
+                }
+            }
+        }
+    }
 }
