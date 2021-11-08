@@ -3,7 +3,6 @@ package cpen221.mp2;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class UDWInteractionGraph {
@@ -303,7 +302,7 @@ public class UDWInteractionGraph {
         for(int i=0;i<allUsers.size();i++){
             int[] UserReport=ReportOnUser(allUsers.get(i));
             Ranking[i][1]=allUsers.get(i);
-            Ranking[i][0]=UserReport[1];
+            Ranking[i][0]=UserReport[0];
         }
 
         Arrays.sort(Ranking, (b, a) -> a[0] - b[0]);
@@ -317,7 +316,6 @@ public class UDWInteractionGraph {
             }
             System.out.println();
         }
-
 
         return Ranking[N-1][1];
     }
@@ -345,10 +343,9 @@ public class UDWInteractionGraph {
                 }
             }
 
-
-
         return count;
     }
+
     public void findconnection(int userid, ArrayList userlist, ArrayList graph){
         for(int j=0;j<userlist.size();j++){
             if(interactionMap[allUsers.indexOf(userid)][allUsers.indexOf(userlist.get(j))].size()>0&& graph.contains(userlist.get(j))==false){
