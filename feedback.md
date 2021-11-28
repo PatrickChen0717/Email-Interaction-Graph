@@ -4,7 +4,7 @@
 
 | Compilation | Timeout | Duration |
 |:-----------:|:-------:|:--------:|
-||NoNoNo|21.38|
+|YesYesYes|NoNoNo|21.38|
 
 ## Comments
 Some specs are missing and existing specs lack detail. RI/AFs are missing. Variable names are good, but there is a lack of comments and there is commented out code in DWInteractionGraph. Code style is fine.
